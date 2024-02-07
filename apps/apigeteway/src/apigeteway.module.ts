@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ApigetewayController } from './apigeteway.controller';
-import { ApigetewayService } from './apigeteway.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [],
-  controllers: [ApigetewayController],
-  providers: [ApigetewayService],
+  imports: [UsersModule],
+  controllers: [],
+  providers: [],
 })
 export class ApigetewayModule {}
