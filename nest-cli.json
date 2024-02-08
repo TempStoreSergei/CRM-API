@@ -18,7 +18,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/auth/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/user.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -29,7 +31,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/apigeteway/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -40,6 +44,19 @@
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "src/main",
+      "sourceRoot": "./",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user/tsconfig.app.json",
+        "assets": [
+          "proto/jwt.proto"
+        ],
+        "watchAssets": true
       }
     }
   }

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package auth;
+
+message JwtToken {
+  string token = 1;
+}
+
+service AuthService {
+  rpc SignIn (SignInRequest) returns (JwtToken) {}
+  rpc SignOut (SignOutRequest) returns (SignOutResponse) {}
+  rpc RestorePassword (RestorePasswordRequest) returns (RestorePasswordResponse) {}
+  rpc VerifyToken (VerifyTokenRequest) returns (VerifyTokenResponse) {}
+}
+
+message SignInRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message SignOutRequest {
+  string username = 1;
+}
+
+message SignOutResponse {
+  bool success = 1;
+}
+
+message RestorePasswordRequest {
+  string username = 1;
+}
+
+message RestorePasswordResponse {
+  bool success = 1;
+}
+
+message VerifyTokenRequest {
+  string token = 1;
+}
+
+message VerifyTokenResponse {
+  bool valid = 1;
+}

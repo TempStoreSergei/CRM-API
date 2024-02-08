@@ -6,4 +6,4 @@ import { UsersModule } from './users/users.module';
   controllers: [],
   providers: [],
 })
-export class AuthModule {}
+export class UserModule {}

@@ -2,7 +2,7 @@
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 
-export const protobufPackage = "auth";
+export const protobufPackageUser = "user";
 
 export interface PaginationDto {
   page: number;
@@ -45,7 +45,7 @@ export interface SocialMedia {
   fbUri?: string | undefined;
 }
 
-export const AUTH_PACKAGE_NAME = "auth";
+export const USER_PACKAGE_NAME = "user";
 
 export interface UsersServiceClient {
   createUser(request: CreateUserDto): Observable<User>;

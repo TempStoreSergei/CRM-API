@@ -15,7 +15,7 @@ export class UsersService implements OnModuleInit {
 
   onModuleInit() {
     for (let i = 0; i < 100; i++) {
-      this.create({ age: 0, username: randomUUID(), password: `password${i}` });
+      this.create({ age: 0, username: randomUUID(), password: `password-one` });
     }
   }
 
@@ -54,7 +54,9 @@ export class UsersService implements OnModuleInit {
   remove(id: string): User {
     const userIndex = this.users.findIndex((user) => user.id === id);
     if (userIndex !== -1) {
+      const infoUser = this.users[userIndex];
       this.users.splice(userIndex, 1);
+      return infoUser;
     }
     throw new NotFoundException(`This action removes a #${id} user`);
   }
