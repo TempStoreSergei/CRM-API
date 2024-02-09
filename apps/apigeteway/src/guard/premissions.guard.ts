@@ -5,26 +5,27 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
-export class PermissionsGuard implements CanActivate {
+export class JwtAuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
+    const accessToken = request.headers['authorization'];
 
-    // Add the authorization logic here with Permit.io.
-    // If the user has the necessary permissions, it will return true.
-    // If the user does not have the necessary permissions,
-    // throw an UnauthorizedException.
-
-    const userHasPermission = false; // <- replace this line with your Permit.io logic
-
-    if (!userHasPermission) {
-      throw new UnauthorizedException(
-        'You do not have the necessary permissions.',
-      );
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token not found');
     }
-    return true;
+
+    try {
+      const token = accessToken.replace('Bearer ', '');
+      const decoded = jwt.verify(token, 'your-secret-key');
+      request.user = decoded;
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired access token');
+    }
   }
 }

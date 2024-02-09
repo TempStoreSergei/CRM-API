@@ -12,7 +12,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from '@app/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDtoClass, UpdateUserDtoClass, UserDtoClass } from './dto';
-import { PermissionsGuard } from '../guard/premissions.guard';
+import { JwtAuthGuard } from '../guard/premissions.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -20,6 +20,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiBody({ type: CreateUserDtoClass })
   @ApiResponse({
     status: 201,
@@ -31,7 +32,7 @@ export class UsersController {
   }
 
   @Get()
-/*  @UseGuards(PermissionsGuard)*/
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'The record has been successfully created.',
@@ -42,6 +43,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'The record has been successfully created.',
@@ -52,6 +54,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update a user' })
   @ApiBody({ type: UpdateUserDtoClass })
   @ApiResponse({
@@ -64,6 +67,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
