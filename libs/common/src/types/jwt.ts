@@ -2,70 +2,116 @@
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 
-export const protobufPackageAuth = "auth";
+export const protobufPackage = "auth";
 
-export interface JwtToken {
-  token: string;
+export enum Provider {
+  GOOGLE = 0,
+  UNRECOGNIZED = -1,
 }
 
-export interface SignInRequest {
-  username: string;
+export enum Role {
+  ADMIN = 0,
+  USER = 1,
+  UNRECOGNIZED = -1,
+}
+
+export interface RegisterDto {
+  email: string;
   password: string;
 }
 
-export interface SignOutRequest {
-  username: string;
+export interface LoginDto {
+  email: string;
+  password: string;
+  agent: string;
 }
 
-export interface SignOutResponse {
-  success: boolean;
+export interface UserAuth {
+  email: string;
+  password: string;
 }
 
-export interface RestorePasswordRequest {
-  username: string;
-}
-
-export interface RestorePasswordResponse {
-  success: boolean;
-}
-
-export interface VerifyTokenRequest {
+export interface RefreshToken {
   token: string;
+  exp: string;
+  userId: string;
+  userAgent: string;
 }
 
-export interface VerifyTokenResponse {
-  valid: boolean;
+export interface Tokens {
+  accessToken: string;
+  refreshToken: RefreshToken | undefined;
+}
+
+export interface DeleteAccountRequest {
+  id: string;
+  user: JwtPayload | undefined;
+}
+
+export interface DeleteAccountResponse {
+  id: string;
+}
+
+export interface LogOutRequest {
+  id: string;
+  user: JwtPayload | undefined;
+}
+
+export interface RefreshTokensRequest {
+  refreshToken: string;
+  agent: string;
+}
+
+export interface ProviderAuthRequest {
+  email: string;
+  agent: string;
+  provider: Provider;
+}
+
+export interface JwtPayload {
+  id: string;
+  roles: Role[];
+  email: string;
+}
+
+export interface Empty {
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
 
 export interface AuthServiceClient {
-  signIn(request: SignInRequest): Observable<JwtToken>;
+  signIn(request: RegisterDto): Observable<UserAuth>;
 
-  signOut(request: SignOutRequest): Observable<SignOutResponse>;
+  logIn(request: LoginDto): Observable<Tokens>;
 
-  restorePassword(request: RestorePasswordRequest): Observable<RestorePasswordResponse>;
+  deleteAccount(request: DeleteAccountRequest): Observable<DeleteAccountResponse>;
 
-  verifyToken(request: VerifyTokenRequest): Observable<VerifyTokenResponse>;
+  logOut(request: LogOutRequest): Observable<Empty>;
+
+  refreshTokens(request: RefreshTokensRequest): Observable<Tokens>;
+
+  providerAuth(request: ProviderAuthRequest): Observable<Tokens>;
 }
 
 export interface AuthServiceController {
-  signIn(request: SignInRequest): Promise<JwtToken> | Observable<JwtToken> | JwtToken;
+  signIn(request: RegisterDto): Promise<UserAuth> | Observable<UserAuth> | UserAuth;
 
-  signOut(request: SignOutRequest): Promise<SignOutResponse> | Observable<SignOutResponse> | SignOutResponse;
+  logIn(request: LoginDto): Promise<Tokens> | Observable<Tokens> | Tokens;
 
-  restorePassword(
-    request: RestorePasswordRequest,
-  ): Promise<RestorePasswordResponse> | Observable<RestorePasswordResponse> | RestorePasswordResponse;
+  deleteAccount(
+    request: DeleteAccountRequest,
+  ): Promise<DeleteAccountResponse> | Observable<DeleteAccountResponse> | DeleteAccountResponse;
 
-  verifyToken(
-    request: VerifyTokenRequest,
-  ): Promise<VerifyTokenResponse> | Observable<VerifyTokenResponse> | VerifyTokenResponse;
+  logOut(request: LogOutRequest): Promise<Empty> | Observable<Empty> | Empty;
+
+  refreshTokens(request: RefreshTokensRequest): Promise<Tokens> | Observable<Tokens> | Tokens;
+
+  providerAuth(request: ProviderAuthRequest): Promise<Tokens> | Observable<Tokens> | Tokens;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["signIn", "signOut", "restorePassword", "verifyToken"];
+    const grpcMethods: string[] = ["signIn", "logIn", "deleteAccount", "logOut", "refreshTokens", "providerAuth"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

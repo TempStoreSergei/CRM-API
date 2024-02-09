@@ -2,42 +2,81 @@ syntax = "proto3";
 
 package auth;
 
-message JwtToken {
-  string token = 1;
-}
-
 service AuthService {
-  rpc SignIn (SignInRequest) returns (JwtToken) {}
-  rpc SignOut (SignOutRequest) returns (SignOutResponse) {}
-  rpc RestorePassword (RestorePasswordRequest) returns (RestorePasswordResponse) {}
-  rpc VerifyToken (VerifyTokenRequest) returns (VerifyTokenResponse) {}
+  rpc SignIn (RegisterDto) returns (UserAuth);
+  rpc LogIn (LoginDto) returns (Tokens);
+  rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
+  rpc LogOut (LogOutRequest) returns (Empty);
+  rpc RefreshTokens (RefreshTokensRequest) returns (Tokens);
+  rpc ProviderAuth (ProviderAuthRequest) returns (Tokens);
 }
 
-message SignInRequest {
-  string username = 1;
+message RegisterDto {
+  string email = 1;
   string password = 2;
 }
 
-message SignOutRequest {
-  string username = 1;
+message LoginDto {
+  string email = 1;
+  string password = 2;
+  string agent = 3;
 }
 
-message SignOutResponse {
-  bool success = 1;
+message UserAuth {
+  string email = 1;
+  string password = 2;
 }
 
-message RestorePasswordRequest {
-  string username = 1;
-}
-
-message RestorePasswordResponse {
-  bool success = 1;
-}
-
-message VerifyTokenRequest {
+message RefreshToken {
   string token = 1;
+  string exp = 2;
+  string userId = 3;
+  string userAgent = 4;
 }
 
-message VerifyTokenResponse {
-  bool valid = 1;
+message Tokens {
+  string accessToken = 1;
+  RefreshToken refreshToken = 2;
+}
+
+message DeleteAccountRequest {
+  string id = 1;
+  JwtPayload user = 2;
+}
+
+message DeleteAccountResponse {
+  string id = 1;
+}
+
+message LogOutRequest {
+  string id = 1;
+  JwtPayload user = 2;
+}
+
+message RefreshTokensRequest {
+  string refreshToken = 1;
+  string agent = 2;
+}
+
+message ProviderAuthRequest {
+  string email = 1;
+  string agent = 2;
+  Provider provider = 3;
+}
+
+message JwtPayload {
+  string id = 1;
+  repeated Role roles = 2;
+  string email = 3;
+}
+
+message Empty {}
+
+enum Provider {
+  GOOGLE = 0;
+}
+
+enum Role {
+  ADMIN = 0;
+  USER = 1;
 }

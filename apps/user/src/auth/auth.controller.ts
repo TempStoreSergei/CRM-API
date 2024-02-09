@@ -3,14 +3,16 @@ import { AuthService } from './auth.service';
 import {
   AuthServiceControllerMethods,
   AuthServiceController,
-  SignOutRequest,
-  SignOutResponse,
-  SignInRequest,
-  JwtToken,
-  RestorePasswordRequest,
-  RestorePasswordResponse,
-  VerifyTokenRequest,
-  VerifyTokenResponse,
+  ProviderAuthRequest,
+  Tokens,
+  RefreshTokensRequest,
+  Empty,
+  LogOutRequest,
+  DeleteAccountRequest,
+  DeleteAccountResponse,
+  RegisterDto,
+  UserAuth,
+  LoginDto,
 } from '@app/common';
 import { Observable } from 'rxjs';
 
@@ -19,33 +21,41 @@ import { Observable } from 'rxjs';
 export class AuthController implements AuthServiceController {
   constructor(private readonly authService: AuthService) {}
 
-  signOut(
-    request: SignOutRequest,
-  ): Promise<SignOutResponse> | Observable<SignOutResponse> | SignOutResponse {
-    return this.authService.signOut(request);
+  providerAuth(
+    request: ProviderAuthRequest,
+  ): Promise<Tokens> | Observable<Tokens> | Tokens {
+    return this.authService.providerAuth(
+      request.email,
+      request.agent,
+      request.provider,
+    );
+  }
+  refreshTokens(
+    request: RefreshTokensRequest,
+  ): Promise<Tokens> | Observable<Tokens> | Tokens {
+    return this.authService.refreshTokens(request.refreshToken, request.agent);
+  }
+
+  logOut(request: LogOutRequest): Promise<Empty> | Observable<Empty> | Empty {
+    return this.authService.logOut(request.id, request.user);
+  }
+
+  deleteAccount(
+    request: DeleteAccountRequest,
+  ):
+    | Promise<DeleteAccountResponse>
+    | Observable<DeleteAccountResponse>
+    | DeleteAccountResponse {
+    return this.authService.deleteAccount(request.id, request.user);
   }
 
   signIn(
-    request: SignInRequest,
-  ): Promise<JwtToken> | Observable<JwtToken> | JwtToken {
+    request: RegisterDto,
+  ): Promise<UserAuth> | Observable<UserAuth> | UserAuth {
     return this.authService.signIn(request);
   }
 
-  restorePassword(
-    request: RestorePasswordRequest,
-  ):
-    | Promise<RestorePasswordResponse>
-    | Observable<RestorePasswordResponse>
-    | RestorePasswordResponse {
-    return this.authService.restorePassword(request);
-  }
-
-  verifyToken(
-    request: VerifyTokenRequest,
-  ):
-    | Promise<VerifyTokenResponse>
-    | Observable<VerifyTokenResponse>
-    | VerifyTokenResponse {
-    return this.authService.verifyToken(request);
+  logIn(request: LoginDto): Promise<Tokens> | Observable<Tokens> | Tokens {
+    return this.authService.logIn(request, request.agent);
   }
 }

@@ -4,7 +4,13 @@ import {
   AUTH_SERVICE_NAME,
   AuthServiceClient,
   AUTH_PACKAGE_NAME,
-} from '@app/common';
+  RegisterDto,
+  LoginDto,
+  LogOutRequest,
+  RefreshTokensRequest,
+  ProviderAuthRequest,
+  DeleteAccountRequest
+} from "@app/common";
 import { ClientGrpc } from '@nestjs/microservices';
 
 @Injectable()
@@ -17,7 +23,27 @@ export class AuthService implements OnModuleInit {
       this.client.getService<AuthServiceClient>(AUTH_SERVICE_NAME);
   }
 
-  test(createUserDto: CreateUserDto) {
-    return this.authService.signIn({ username: 'test', password: 'teste12' });
+  SignUp(registerDto: RegisterDto) {
+    return this.authService.signIn(registerDto);
+  }
+
+  LogIn(loginDto: LoginDto) {
+    return this.authService.logIn(loginDto);
+  }
+
+  LogOut(logOutRequest: LogOutRequest) {
+    return this.authService.logOut(logOutRequest);
+  }
+
+  RefreshTokens(refreshTokensRequest: RefreshTokensRequest) {
+    return this.authService.refreshTokens(refreshTokensRequest);
+  }
+
+  ProviderAuth(providerAuthRequest: ProviderAuthRequest) {
+    return this.authService.providerAuth(providerAuthRequest);
+  }
+
+  DeleteAccount(deleteAccountRequest: DeleteAccountRequest) {
+    return this.authService.deleteAccount(deleteAccountRequest);
   }
 }
