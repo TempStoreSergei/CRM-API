@@ -92,7 +92,7 @@ export class AuthService {
       where: { token: refreshToken },
     });
     if (!token || new Date(token.exp) < new Date()) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
     const user = await this.findOne(token.userId);
     return this.generateTokens(user, agent);

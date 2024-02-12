@@ -2,12 +2,11 @@ import {
   Controller,
   Post,
   Body,
-  Res,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from '@app/common';
+import { LoginDto, RefreshTokensRequest, RegisterDto } from "@app/common";
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { LogInDtoClass, SignUpDtoClass } from './dto';
 import { catchError, map, throwError } from 'rxjs';
@@ -29,7 +28,8 @@ export class AuthController {
     return this.authService.LogIn(loginDto).pipe(
       map((result) => {
         const accessToken = result.accessToken;
-        return { accessToken };
+        const refreshToken = result.refreshToken.token;
+        return { accessToken, refreshToken };
       }),
       catchError((error) => {
         console.error('Error logging in:', error);
@@ -44,5 +44,11 @@ export class AuthController {
         );
       }),
     );
+  }
+
+  @Post('refresh')
+  @ApiBody({ type: SignUpDtoClass })
+  refreshToken(@Body() refreshTokensRequest: RefreshTokensRequest) {
+    return this.authService.RefreshTokens(refreshTokensRequest);
   }
 }
