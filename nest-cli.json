@@ -58,6 +58,28 @@
         ],
         "watchAssets": true
       }
+    },
+    "calendar": {
+      "type": "application",
+      "root": "apps/calendar",
+      "entryFile": "src/main",
+      "sourceRoot": "./",
+      "compilerOptions": {
+        "tsConfigPath": "apps/calendar/tsconfig.app.json",
+        "assets": [
+          "proto/calendar.proto"
+        ],
+        "watchAssets": true
+      }
+    },
+    "messanger": {
+      "type": "application",
+      "root": "apps/messanger",
+      "entryFile": "main",
+      "sourceRoot": "apps/messanger/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/messanger/tsconfig.app.json"
+      }
     }
   }
 }

@@ -32,7 +32,6 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'The record has been successfully created.',

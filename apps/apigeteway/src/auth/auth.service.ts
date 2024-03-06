@@ -1,6 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import {
-  CreateUserDto,
   AUTH_SERVICE_NAME,
   AuthServiceClient,
   AUTH_PACKAGE_NAME,
@@ -9,7 +8,7 @@ import {
   LogOutRequest,
   RefreshTokensRequest,
   ProviderAuthRequest,
-  DeleteAccountRequest
+  DeleteAccountRequest,
 } from "@app/common";
 import { ClientGrpc } from '@nestjs/microservices';
 

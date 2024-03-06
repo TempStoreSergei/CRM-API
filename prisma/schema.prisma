@@ -43,3 +43,16 @@ enum Provider {
   GOOGLE
   YANDEX
 }
+
+// ########################################################################
+
+model Almanac {
+  id        String   @id
+  user      String
+  title     String
+  body      String
+  startTime DateTime
+  endTime   DateTime
+
+  @@index([user])
+}

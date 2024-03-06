@@ -14,7 +14,7 @@ export class UsersService implements OnModuleInit {
   private readonly users: User[] = [];
 
   onModuleInit() {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
       this.create({ age: 0, username: randomUUID(), password: `password-one` });
     }
   }
