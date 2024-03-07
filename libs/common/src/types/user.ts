@@ -18,7 +18,7 @@ export interface FindOneUserDto {
   id: string;
 }
 
-export interface Empty {
+interface Empty {
 }
 
 export interface Users {

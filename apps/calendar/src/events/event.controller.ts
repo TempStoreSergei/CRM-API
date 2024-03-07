@@ -21,54 +21,42 @@ export class EventController implements CalendarServiceController {
   getWeekEvent(
     request: EventUser,
   ): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents {
-    return {
-      result: [],
-    };
+    return this.usersService.getWeekEvent(request);
   }
 
   getDayEvent(
     request: EventUser,
   ): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents {
-    return {
-      result: [],
-    };
+    return this.usersService.getDayEvent(request);
   }
 
   getMonthEvent(
     request: EventUser,
   ): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents {
-    return {
-      result: [],
-    };
+    return this.usersService.getMonthEvent(request);
   }
 
   getAll(
     request: Empty,
   ): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents {
-    return this.usersService.findAll(request);
+    return this.usersService.getAll();
   }
 
   create(
     request: EventCreate,
   ): Promise<ResponseOK> | Observable<ResponseOK> | ResponseOK {
-    return {
-      result: 'Ok',
-    };
+    return this.usersService.create(request);
   }
 
   delete(
     request: EventDelete,
   ): Promise<ResponseOK> | Observable<ResponseOK> | ResponseOK {
-    return {
-      result: 'Ok',
-    };
+    return this.usersService.delete(request);
   }
 
   update(
     request: EventUpdate,
   ): Promise<ResponseOK> | Observable<ResponseOK> | ResponseOK {
-    return {
-      result: 'Ok',
-    };
+    return this.usersService.update(request);
   }
 }

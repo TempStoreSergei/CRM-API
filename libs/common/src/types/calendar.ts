@@ -1,10 +1,11 @@
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
+import { Timestamp } from "../../../../google/protobuf/timestamp";
 
-export const protobufPackage = "calendar";
+const protobufPackage = "calendar";
 
-export interface Empty {
+interface Empty {
 }
 
 /** Создание события в календаре */
@@ -12,7 +13,7 @@ export interface EventCreate {
   user: string;
   title: string;
   body: string;
-  starttime: string;
+  startTime: Timestamp | undefined;
   duration: string;
 }
 
@@ -22,7 +23,7 @@ export interface EventUpdate {
   user: string;
   title: string;
   body: string;
-  starttime: string;
+  startTime: Timestamp | undefined;
   duration: string;
 }
 
@@ -42,13 +43,22 @@ export interface Event {
   user: string;
   title: string;
   body: string;
-  starttime: string;
-  endtime: string;
+  startTime: Timestamp | undefined;
+  endTime: Timestamp | undefined;
+}
+
+export interface EventResponse {
+  id: string;
+  user: string;
+  title: string;
+  body: string;
+  startTime: string;
+  endTime: string;
 }
 
 /** Успешный ответ - список Cобытий */
 export interface ResponseEvents {
-  result: Event[];
+  result: EventResponse[];
 }
 
 /** Успешный ответ от сервиса */
