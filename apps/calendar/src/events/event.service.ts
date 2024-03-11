@@ -8,7 +8,7 @@ import {
   ResponseEvents,
   ResponseOK,
 } from '@app/common';
-import { addMinutes, endOfDay, fromUnixTime, startOfDay } from 'date-fns'
+import { addMinutes, endOfDay, fromUnixTime, startOfDay } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { v4 as uuidv4 } from 'uuid';
@@ -103,14 +103,20 @@ export class EventService {
 
   async getWeekEvent(user: EventUser): Promise<ResponseEvents> {
     const today = new Date();
-    const startOfWeek = new Date(
-      today.setDate(today.getDate() - today.getDay()),
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(
+      today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1),
     );
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
     const events: Event[] = await this.prisma.almanac.findMany({
       where: {
         user: user.user,
         startTime: {
           gte: startOfWeek,
+          lt: endOfWeek,
         },
       },
     });
@@ -121,11 +127,17 @@ export class EventService {
   async getMonthEvent(user: EventUser): Promise<ResponseEvents> {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const endOfMonth = new Date(lastDayOfMonth);
+    endOfMonth.setDate(lastDayOfMonth.getDate() + 1);
+
     const events: Event[] = await this.prisma.almanac.findMany({
       where: {
         user: user.user,
         startTime: {
           gte: startOfMonth,
+          lt: endOfMonth,
         },
       },
     });
@@ -142,7 +154,7 @@ export class EventService {
       startTime: e.startTime,
       endTime: e.endTime,
     }));
-
+    // @ts-ignore
     return { result };
   }
 }
