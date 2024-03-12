@@ -181,14 +181,14 @@ export class AuthService {
       update: {
         password: hashedPassword ?? undefined,
         provider: user?.provider ?? undefined,
-        roles: user?.roles ?? undefined,
+        rolesId: "1",
         isBlocked: user?.isBlocked ?? undefined,
       },
       create: {
         email: user.email,
         password: hashedPassword,
         provider: user?.provider,
-        roles: ['USER'],
+        rolesId: "1",
       },
     });
     await this.cacheManager.set(savedUser.id, savedUser);

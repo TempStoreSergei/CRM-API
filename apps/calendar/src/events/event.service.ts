@@ -11,7 +11,6 @@ import {
 import { addMinutes, endOfDay, fromUnixTime, startOfDay } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class EventService {
@@ -26,14 +25,15 @@ export class EventService {
     const startTimeDate = fromUnixTime(eventCreate.startTime.seconds);
 
     const endTime = addMinutes(startTimeDate, Number(eventCreate.duration));
-    const newEvent = await this.prisma.almanac.create({
+    const newEvent = await this.prisma.event.create({
       data: {
-        id: uuidv4(),
-        user: eventCreate.user,
-        title: eventCreate.title,
-        body: eventCreate.body,
+        userId: eventCreate.user,
+        name: eventCreate.title,
+        description: eventCreate.body,
         startTime: startTimeDate,
         endTime: endTime,
+        categoryId: '1',
+        priorityId: '1',
       },
     });
 
@@ -44,7 +44,7 @@ export class EventService {
     const eventId = eventDelete.id;
 
     try {
-      await this.prisma.almanac.delete({
+      await this.prisma.event.delete({
         where: { id: eventId },
       });
 
@@ -62,10 +62,9 @@ export class EventService {
     );
 
     try {
-      await this.prisma.almanac.update({
+      await this.prisma.event.update({
         where: { id: eventId },
         data: {
-          user: eventUpdate.user,
           title: eventUpdate.title,
           body: eventUpdate.body,
           startTime: eventUpdate.startTime,
@@ -80,7 +79,7 @@ export class EventService {
   }
 
   async getAll(): Promise<ResponseEvents> {
-    const events: Event[] = await this.prisma.almanac.findMany();
+    const events: Event[] = await this.prisma.event.findMany();
     return this.mapEventsToResponse(events);
   }
 
@@ -88,9 +87,9 @@ export class EventService {
     const todayStart = startOfDay(new Date());
     const todayEnd = endOfDay(new Date());
 
-    const events: Event[] = await this.prisma.almanac.findMany({
+    const events: Event[] = await this.prisma.event.findMany({
       where: {
-        user: user.user,
+        userId: user.user,
         startTime: {
           gte: todayStart,
           lt: todayEnd,
@@ -111,9 +110,9 @@ export class EventService {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-    const events: Event[] = await this.prisma.almanac.findMany({
+    const events: Event[] = await this.prisma.event.findMany({
       where: {
-        user: user.user,
+        userId: user.user,
         startTime: {
           gte: startOfWeek,
           lt: endOfWeek,
@@ -128,13 +127,17 @@ export class EventService {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const lastDayOfMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      0,
+    );
     const endOfMonth = new Date(lastDayOfMonth);
     endOfMonth.setDate(lastDayOfMonth.getDate() + 1);
 
-    const events: Event[] = await this.prisma.almanac.findMany({
+    const events: Event[] = await this.prisma.event.findMany({
       where: {
-        user: user.user,
+        userId: user.user,
         startTime: {
           gte: startOfMonth,
           lt: endOfMonth,

@@ -1,58 +1,111 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["auth", "calendar"]
+}
+
+// User authentication and authorization
+model Role {
+  id       String     @id @default(uuid())
+  name     String     @map("name")
+  RoleUser RoleUser[]
+
+  @@map("roles")
+  @@schema("auth")
+}
+
+model Provider {
+  id   String @id @default(uuid())
+  name String @map("name")
+  User User[]
+
+  @@map("providers")
+  @@schema("auth")
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String?
-  provider  Provider?
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  roles     Role[]
-  Token     Token[]
-  isBlocked Boolean   @default(false) @map("is_blocked")
+  id         String     @id @default(uuid())
+  email      String     @unique @map("email")
+  password   String?    @map("password")
+  provider   Provider?  @relation(fields: [providerId], references: [id])
+  providerId String?    @map("provider_id")
+  rolesId    String     @map("roles_id")
+  isBlocked  Boolean    @default(false) @map("is_blocked")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  Token      Token[]
+  Event      Event[]
+  RoleUser   RoleUser[]
 
   @@map("users")
+  @@schema("auth")
 }
 
 model Token {
-  token     String   @unique
-  exp       DateTime
+  token     String   @unique @map("token")
+  exp       DateTime @map("exp")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  userId    String   @map("user_id")
   userAgent String   @map("user_agent")
 
   @@map("tokens")
+  @@schema("auth")
 }
 
-enum Role {
-  ADMIN
-  USER
+model RoleUser {
+  id        String   @id @default(uuid())
+  name      String   @map("name")
+  User      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    String   @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("role_users")
+  @@schema("auth")
 }
 
-enum Provider {
-  GOOGLE
-  YANDEX
+// Task management
+model Category {
+  id    String  @id @default(uuid())
+  name  String  @map("name")
+  Event Event[]
+
+  @@map("categories")
+  @@schema("calendar")
 }
 
-// ########################################################################
+model Priority {
+  id    String  @id @default(uuid())
+  name  String  @map("name")
+  Event Event[]
 
-model Almanac {
-  id        String   @id
-  user      String
-  title     String
-  body      String
-  startTime DateTime
-  endTime   DateTime
+  @@map("priorities")
+  @@schema("calendar")
+}
 
-  @@index([user])
+model Event {
+  id          String   @id @default(uuid())
+  name        String   @map("name")
+  description String   @map("description")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @map("user_id")
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  String   @map("category_id")
+  priority    Priority @relation(fields: [priorityId], references: [id], onDelete: Cascade)
+  priorityId  String   @map("priority_id")
+  startTime   DateTime @map("start_time")
+  endTime     DateTime @map("end_time")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("events")
+  @@schema("calendar")
 }
