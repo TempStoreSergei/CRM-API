@@ -10,21 +10,64 @@ interface Empty {
 
 /** Создание события в календаре */
 export interface EventCreate {
-  user: string;
-  title: string;
-  body: string;
-  startTime: Timestamp | undefined;
-  duration: string;
+  /** ID пользователя */
+  userId: string;
+  /** Название события */
+  name: string;
+  /** Описание события */
+  description: string;
+  /** Время начала */
+  startTime:
+    | Timestamp
+    | undefined;
+  /** // Сколько по времени идет событие */
+  duration: number;
+  /** ID категории */
+  categoryId: string;
+  /** ID приоритета */
+  priorityId: string;
 }
 
 /** Обновление события в календаре */
 export interface EventUpdate {
+  /** ID события */
   id: string;
-  user: string;
-  title: string;
-  body: string;
-  startTime: Timestamp | undefined;
-  duration: string;
+  /** ID пользователя */
+  userId: string;
+  /** Название события */
+  name: string;
+  /** Описание события */
+  description: string;
+  /** Время начала */
+  startTime:
+    | Timestamp
+    | undefined;
+  /** // Сколько по времени идет событие */
+  duration: number;
+  /** ID категории */
+  categoryId: string;
+  /** ID приоритета */
+  priorityId: string;
+}
+
+/** Ответ с одним событием */
+export interface EventResponse {
+  /** ID события */
+  id: string;
+  /** ID пользователя */
+  userId: string;
+  /** Название события */
+  name: string;
+  /** Описание события */
+  description: string;
+  /** Время начала */
+  startTime: string;
+  /** Время окончания */
+  endTime: string;
+  /** ID категории */
+  categoryId: string;
+  /** ID приоритета */
+  priorityId: string;
 }
 
 /** Id события - для удаления */
@@ -34,26 +77,30 @@ export interface EventDelete {
 
 /** Пользователь */
 export interface EventUser {
-  user: string;
+  userId: string;
+  currentTime: Timestamp | undefined;
 }
 
-/** Cобытие в календаре */
-export interface Event {
-  id: string;
-  user: string;
-  title: string;
-  body: string;
-  startTime: Timestamp | undefined;
-  endTime: Timestamp | undefined;
+/** Успешный ответ - список категорий */
+export interface ResponseCategories {
+  categories: Category[];
 }
 
-export interface EventResponse {
+/** Успешный ответ - список приоритетов */
+export interface ResponsePriorities {
+  priorities: Priority[];
+}
+
+/** Категория */
+export interface Category {
   id: string;
-  user: string;
-  title: string;
-  body: string;
-  startTime: string;
-  endTime: string;
+  name: string;
+}
+
+/** Приоритет */
+export interface Priority {
+  id: string;
+  name: string;
 }
 
 /** Успешный ответ - список Cобытий */
@@ -84,6 +131,10 @@ export interface CalendarServiceClient {
   getWeekEvent(request: EventUser): Observable<ResponseEvents>;
 
   getMonthEvent(request: EventUser): Observable<ResponseEvents>;
+
+  getCategories(request: Empty): Observable<ResponseCategories>;
+
+  getPriorities(request: Empty): Observable<ResponsePriorities>;
 }
 
 /** Методы Сервиса */
@@ -102,6 +153,10 @@ export interface CalendarServiceController {
   getWeekEvent(request: EventUser): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents;
 
   getMonthEvent(request: EventUser): Promise<ResponseEvents> | Observable<ResponseEvents> | ResponseEvents;
+
+  getCategories(request: Empty): Promise<ResponseCategories> | Observable<ResponseCategories> | ResponseCategories;
+
+  getPriorities(request: Empty): Promise<ResponsePriorities> | Observable<ResponsePriorities> | ResponsePriorities;
 }
 
 export function CalendarServiceControllerMethods() {
@@ -114,6 +169,8 @@ export function CalendarServiceControllerMethods() {
       "getDayEvent",
       "getWeekEvent",
       "getMonthEvent",
+      "getCategories",
+      "getPriorities",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

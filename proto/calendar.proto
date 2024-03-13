@@ -13,27 +13,46 @@ service CalendarService {
   rpc GetDayEvent(EventUser) returns (ResponseEvents) {};
   rpc GetWeekEvent(EventUser) returns (ResponseEvents) {};
   rpc GetMonthEvent(EventUser) returns (ResponseEvents) {};
+  rpc GetCategories(Empty) returns (ResponseCategories) {};
+  rpc GetPriorities(Empty) returns (ResponsePriorities) {};
 }
 
 message Empty {}
 
+
 // Создание события в календаре
 message EventCreate {
-  string user = 1;
-  string title = 2;
-  string body = 3;
-  google.protobuf.Timestamp startTime = 4;
-  string duration = 5;
+  string userId = 1; // ID пользователя
+  string name = 2; // Название события
+  string description = 3; // Описание события
+  google.protobuf.Timestamp startTime = 4; // Время начала
+  uint32 duration = 5; // // Сколько по времени идет событие
+  string categoryId = 6; // ID категории
+  string priorityId = 7; // ID приоритета
 }
 
 // Обновление события в календаре
 message EventUpdate {
-  string id = 1;
-  string user = 2;
-  string title = 3;
-  string body = 4;
-  google.protobuf.Timestamp startTime = 5;
-  string duration = 6;
+  string id = 1; // ID события
+  string userId = 2; // ID пользователя
+  string name = 3; // Название события
+  string description = 4; // Описание события
+  google.protobuf.Timestamp startTime = 5; // Время начала
+  uint32 duration = 6; // // Сколько по времени идет событие
+  string categoryId = 7; // ID категории
+  string priorityId = 8; // ID приоритета
+}
+
+// Ответ с одним событием
+message EventResponse {
+  string id = 1; // ID события
+  string userId = 2; // ID пользователя
+  string name = 3; // Название события
+  string description = 4; // Описание события
+  string startTime = 5; // Время начала
+  string endTime = 6; // Время окончания
+  string categoryId = 7; // ID категории
+  string priorityId = 8; // ID приоритета
 }
 
 // Id события - для удаления
@@ -43,27 +62,31 @@ message EventDelete {
 
 // Пользователь
 message EventUser {
-  string user = 1;
-}
-
-// Cобытие в календаре
-message Event {
-  string id = 1;
-  string user = 2;
-  string title = 3;
-  string body = 4;
-  google.protobuf.Timestamp startTime = 5;
-  google.protobuf.Timestamp endTime = 6;
+  string userId = 1;
+  google.protobuf.Timestamp currentTime = 2;
 }
 
 
-message EventResponse {
+// Успешный ответ - список категорий
+message ResponseCategories {
+  repeated Category categories = 1;
+}
+
+// Успешный ответ - список приоритетов
+message ResponsePriorities {
+  repeated Priority priorities = 1;
+}
+
+// Категория
+message Category {
   string id = 1;
-  string user = 2;
-  string title = 3;
-  string body = 4;
-  string startTime = 5;
-  string endTime = 6;
+  string name = 2;
+}
+
+// Приоритет
+message Priority {
+  string id = 1;
+  string name = 2;
 }
 
 // Успешный ответ - список Cобытий

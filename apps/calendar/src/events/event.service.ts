@@ -1,16 +1,28 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  Event,
+  addMinutes,
+  fromUnixTime,
+  formatISO,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
+import { PrismaService } from '../prisma/prisma.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+
+import {
   EventCreate,
   EventDelete,
   EventUpdate,
   EventUser,
   ResponseEvents,
   ResponseOK,
+  ResponseCategories,
+  ResponsePriorities,
 } from '@app/common';
-import { addMinutes, endOfDay, fromUnixTime, startOfDay } from 'date-fns';
-import { PrismaService } from '../prisma/prisma.service';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class EventService {
@@ -23,141 +35,191 @@ export class EventService {
 
   async create(eventCreate: EventCreate): Promise<ResponseOK> {
     const startTimeDate = fromUnixTime(eventCreate.startTime.seconds);
-
-    const endTime = addMinutes(startTimeDate, Number(eventCreate.duration));
-    const newEvent = await this.prisma.event.create({
-      data: {
-        userId: eventCreate.user,
-        name: eventCreate.title,
-        description: eventCreate.body,
-        startTime: startTimeDate,
-        endTime: endTime,
-        categoryId: '1',
-        priorityId: '1',
-      },
-    });
-
-    return { result: newEvent.id };
+    const endTime = addMinutes(startTimeDate, eventCreate.duration);
+    try {
+      const newEvent = await this.prisma.event.create({
+        data: {
+          userId: eventCreate.userId,
+          name: eventCreate.name,
+          description: eventCreate.description,
+          startTime: startTimeDate,
+          endTime: endTime,
+          categoryId: eventCreate.categoryId,
+          priorityId: eventCreate.priorityId,
+        },
+      });
+      this.logger.log(`Event created: ${newEvent.id}`);
+      return { result: newEvent.id };
+    } catch (error) {
+      this.logger.error(`Error creating event: ${error.message}`);
+      throw error;
+    }
   }
 
   async delete(eventDelete: EventDelete): Promise<ResponseOK> {
-    const eventId = eventDelete.id;
-
     try {
       await this.prisma.event.delete({
-        where: { id: eventId },
+        where: { id: eventDelete.id },
       });
-
+      this.logger.log(`Event deleted: ${eventDelete.id}`);
       return { result: 'ok' };
     } catch (error) {
-      throw new Error(`Failed to delete event: ${error.message}`);
+      this.logger.error(`Error deleting event: ${error.message}`);
+      throw error;
     }
   }
 
   async update(eventUpdate: EventUpdate): Promise<ResponseOK> {
-    const eventId = eventUpdate.id;
-    const endTime = addMinutes(
-      eventUpdate.startTime,
-      Number(eventUpdate.duration) * 60000,
-    );
-
+    const startTimeDate = fromUnixTime(eventUpdate.startTime.seconds);
+    const endTime = addMinutes(startTimeDate, eventUpdate.duration);
     try {
       await this.prisma.event.update({
-        where: { id: eventId },
+        where: { id: eventUpdate.id },
         data: {
-          title: eventUpdate.title,
-          body: eventUpdate.body,
-          startTime: eventUpdate.startTime,
-          endTime,
+          userId: eventUpdate.userId,
+          name: eventUpdate.name,
+          description: eventUpdate.description,
+          startTime: startTimeDate,
+          endTime: endTime,
+          categoryId: eventUpdate.categoryId,
+          priorityId: eventUpdate.priorityId,
         },
       });
-
+      this.logger.log(`Event updated: ${eventUpdate.id}`);
       return { result: 'ok' };
     } catch (error) {
-      throw new Error(`Failed to update event: ${error.message}`);
+      this.logger.error(`Error updating event: ${error.message}`);
+      throw error;
     }
   }
 
   async getAll(): Promise<ResponseEvents> {
-    const events: Event[] = await this.prisma.event.findMany();
-    return this.mapEventsToResponse(events);
+    try {
+      const events = await this.prisma.event.findMany();
+      return this.mapEventsToResponse(events);
+    } catch (error) {
+      this.logger.error(`Error retrieving events: ${error.message}`);
+      throw error;
+    }
   }
 
-  async getDayEvent(user: EventUser): Promise<ResponseEvents> {
-    const todayStart = startOfDay(new Date());
-    const todayEnd = endOfDay(new Date());
+  async getDayEvent(eventUser: EventUser): Promise<ResponseEvents> {
+    if (!eventUser.currentTime) {
+      throw new Error('Current time is required.');
+    }
 
-    const events: Event[] = await this.prisma.event.findMany({
-      where: {
-        userId: user.user,
-        startTime: {
-          gte: todayStart,
-          lt: todayEnd,
+    const referenceTime = fromUnixTime(eventUser.currentTime.seconds);
+
+    // Setting the start and end of the day based on the reference time
+    const todayStart = startOfDay(referenceTime);
+    const todayEnd = endOfDay(referenceTime);
+    try {
+      const events = await this.prisma.event.findMany({
+        where: {
+          userId: eventUser.userId,
+          startTime: {
+            gte: todayStart,
+            lte: todayEnd,
+          },
         },
-      },
-    });
-
-    return this.mapEventsToResponse(events);
+      });
+      return this.mapEventsToResponse(events);
+    } catch (error) {
+      this.logger.error(`Error retrieving day events: ${error.message}`);
+      throw error;
+    }
   }
 
-  async getWeekEvent(user: EventUser): Promise<ResponseEvents> {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(
-      today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1),
-    );
+  async getWeekEvent(eventUser: EventUser): Promise<ResponseEvents> {
+    if (!eventUser.currentTime) {
+      throw new Error('Current time is required.');
+    }
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const referenceTime = fromUnixTime(eventUser.currentTime.seconds);
 
-    const events: Event[] = await this.prisma.event.findMany({
-      where: {
-        userId: user.user,
-        startTime: {
-          gte: startOfWeek,
-          lt: endOfWeek,
+    const weekStart = startOfWeek(referenceTime);
+    const weekEnd = endOfWeek(referenceTime);
+    try {
+      const events = await this.prisma.event.findMany({
+        where: {
+          userId: eventUser.userId,
+          startTime: {
+            gte: weekStart,
+            lte: weekEnd,
+          },
         },
-      },
-    });
-
-    return this.mapEventsToResponse(events);
+      });
+      return this.mapEventsToResponse(events);
+    } catch (error) {
+      this.logger.error(`Error retrieving week events: ${error.message}`);
+      throw error;
+    }
   }
 
-  async getMonthEvent(user: EventUser): Promise<ResponseEvents> {
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  async getMonthEvent(eventUser: EventUser): Promise<ResponseEvents> {
+    if (!eventUser.currentTime) {
+      throw new Error('Current time is required.');
+    }
 
-    const lastDayOfMonth = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      0,
-    );
-    const endOfMonth = new Date(lastDayOfMonth);
-    endOfMonth.setDate(lastDayOfMonth.getDate() + 1);
-
-    const events: Event[] = await this.prisma.event.findMany({
-      where: {
-        userId: user.user,
-        startTime: {
-          gte: startOfMonth,
-          lt: endOfMonth,
+    const referenceTime = fromUnixTime(eventUser.currentTime.seconds);
+    const monthStart = startOfMonth(referenceTime);
+    const monthEnd = endOfMonth(referenceTime);
+    try {
+      const events = await this.prisma.event.findMany({
+        where: {
+          userId: eventUser.userId,
+          startTime: {
+            gte: monthStart,
+            lte: monthEnd,
+          },
         },
-      },
-    });
-
-    return this.mapEventsToResponse(events);
+      });
+      return this.mapEventsToResponse(events);
+    } catch (error) {
+      this.logger.error(`Error retrieving month events: ${error.message}`);
+      throw error;
+    }
   }
 
-  private mapEventsToResponse(events: Event[]): ResponseEvents {
-    const result = events.map((e) => ({
-      id: e.id,
-      user: e.user,
-      title: e.title,
-      body: e.body,
-      startTime: e.startTime,
-      endTime: e.endTime,
+  async getCategories(): Promise<ResponseCategories> {
+    try {
+      const categories = await this.prisma.category.findMany();
+      const result = categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+      }));
+      return { categories: result }; // Note: Make sure this matches the structure expected by your protobuf definition.
+    } catch (error) {
+      this.logger.error(`Error retrieving categories: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getPriorities(): Promise<ResponsePriorities> {
+    try {
+      const priorities = await this.prisma.priority.findMany();
+      const result = priorities.map((priority) => ({
+        id: priority.id,
+        name: priority.name,
+      }));
+      return { priorities: result };
+    } catch (error) {
+      this.logger.error(`Error retrieving priorities: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private mapEventsToResponse(events) {
+    const result = events.map((event) => ({
+      id: event.id,
+      userId: event.userId,
+      name: event.name,
+      description: event.description,
+      startTime: formatISO(event.startTime),
+      endTime: formatISO(event.endTime),
+      categoryId: event.categoryId,
+      priorityId: event.priorityId,
     }));
-    // @ts-ignore
     return { result };
   }
 }

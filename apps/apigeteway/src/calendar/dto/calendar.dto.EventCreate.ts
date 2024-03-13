@@ -3,23 +3,26 @@ import { EventCreate } from '@app/common';
 
 export class EventCreateDto implements EventCreate {
   @ApiProperty()
-  duration: string;
+  duration: number;
 
-  @ApiProperty({ format: 'date-time' })
-  eventDate: Date;
-
-  @ApiProperty({ format: 'date-time' })
+  @ApiProperty({ format: 'timestamp' })
   startTime: {
     seconds: number;
     nanos: number;
   };
 
   @ApiProperty()
-  body: string;
+  name: string;
 
   @ApiProperty()
-  user: string;
+  userId: string;
 
   @ApiProperty()
-  title: string;
+  categoryId: string;
+
+  @ApiProperty()
+  priorityId: string;
+
+  @ApiProperty()
+  description: string;
 }

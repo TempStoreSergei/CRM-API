@@ -3,12 +3,15 @@ import {
   CALENDAR_PACKAGE_NAME,
   CALENDAR_SERVICE_NAME,
   CalendarServiceClient,
+  Empty,
   EventCreate,
   EventDelete,
   EventUpdate,
   EventUser,
+  ResponseCategories,
   ResponseEvents,
   ResponseOK,
+  ResponsePriorities,
 } from '@app/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
@@ -50,5 +53,13 @@ export class CalendarService implements OnModuleInit {
 
   delete(request: EventDelete): Observable<ResponseOK> {
     return this.calendarService.delete(request);
+  }
+
+  getPriorities(request: Empty): Observable<ResponsePriorities> {
+    return this.calendarService.getPriorities(request);
+  }
+
+  getCategories(request: Empty): Observable<ResponseCategories> {
+    return this.calendarService.getCategories(request);
   }
 }

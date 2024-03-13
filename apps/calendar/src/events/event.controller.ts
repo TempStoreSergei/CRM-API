@@ -10,6 +10,8 @@ import {
   EventDelete,
   EventUpdate,
   CalendarServiceControllerMethods,
+  ResponseCategories,
+  ResponsePriorities,
 } from '@app/common';
 import { Observable } from 'rxjs';
 
@@ -58,5 +60,23 @@ export class EventController implements CalendarServiceController {
     request: EventUpdate,
   ): Promise<ResponseOK> | Observable<ResponseOK> | ResponseOK {
     return this.usersService.update(request);
+  }
+
+  getCategories(
+    request: Empty,
+  ):
+    | Promise<ResponseCategories>
+    | Observable<ResponseCategories>
+    | ResponseCategories {
+    return this.usersService.getCategories();
+  }
+
+  getPriorities(
+    request: Empty,
+  ):
+    | Promise<ResponsePriorities>
+    | Observable<ResponsePriorities>
+    | ResponsePriorities {
+    return this.usersService.getPriorities();
   }
 }
