@@ -24,7 +24,7 @@ import {
   ResponseOKDto,
 } from './dto';
 
-@ApiTags('Calendar')
+@ApiTags('Events')
 @Controller('events')
 export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}

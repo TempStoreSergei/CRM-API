@@ -17,7 +17,7 @@ export class UsersController implements UsersServiceController {
   constructor(private readonly usersService: UsersService) {}
 
   createUser(createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.usersService.createProfile(createUserDto);
   }
 
   findAllUsers() {

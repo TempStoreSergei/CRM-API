@@ -1,33 +1,50 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import {
-  User,
-  UpdateUserDto,
-  CreateUserDto,
-  Users,
-  PaginationDto,
-} from '@app/common';
-import { randomUUID } from 'crypto';
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { PaginationDto, UpdateUserDto, User, Users } from '@app/common';
 import { Observable, Subject } from 'rxjs';
+import { PrismaService } from '../../../user/src/prisma/prisma.service';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
-  private readonly users: User[] = [];
+export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+  private readonly users = [];
+  constructor(private readonly prismaService: PrismaService) {}
 
-  onModuleInit() {
-    for (let i = 0; i < 1000; i++) {
-      this.create({ age: 0, username: randomUUID(), password: `password-one` });
+  async createProfile(dto: any) {
+    // Assuming dto includes userId and optionally other fields like displayName, avatar, etc.
+    const existingProfile = await this.prismaService.profile
+      .findUnique({
+        where: { userId: dto.userId },
+      })
+      .catch((err) => {
+        this.logger.error(
+          `Error finding existing profile for user ${dto.userId}: ${err}`,
+        );
+        throw new NotFoundException('Error finding existing profile');
+      });
+
+    if (existingProfile) {
+      throw new ConflictException('Profile already exists for this user');
     }
-  }
 
-  create(createUserDto: CreateUserDto): User {
-    const user: User = {
-      ...createUserDto,
-      subscribed: false,
-      socialMedia: {},
-      id: randomUUID(),
-    };
-    this.users.push(user);
-    return user;
+    return this.prismaService.profile
+      .create({
+        data: {
+          userId: dto.userId,
+          displayName: dto.displayName,
+          avatar: dto.avatar,
+          statusMessage: dto.statusMessage,
+          phoneNumber: dto.phoneNumber,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(`Error creating profile: ${err}`);
+        return null;
+      });
   }
 
   findAll(): Users {

@@ -20,7 +20,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   @ApiBody({ type: CreateUserDtoClass })
   @ApiResponse({
     status: 201,
@@ -32,6 +31,7 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'The record has been successfully created.',

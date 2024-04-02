@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package profile;
+
+// Import statements if needed
+
+message Profile {
+  string id = 1;
+  string userId = 2;
+  string projectId = 3;
+  string displayName = 4;
+  string avatar = 5;
+  string statusMessage = 6;
+  string phoneNumber = 7;
+  string lastSeen = 8; // Use string for datetime fields (ISO8601 format recommended)
+  bool isOnline = 9;
+  string createdAt = 10;
+  string updatedAt = 11;
+}
+
+message Empty {}
+
+message ProfileProject {
+  string profileId = 1;
+  string projectId = 2;
+}
+
+message Project {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string taskId = 4; // Assuming a project can have multiple tasks, but for simplification, keeping it as a single field here
+  repeated Profile profiles = 5; // Including related profiles to reflect the relationship
+  string createdAt = 6;
+  string updatedAt = 7;
+}
+
+message Task {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  bool completed = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+  // Assuming tasks can belong to multiple projects in real-life scenarios, but here it is simplified
+}
+
+// Extend the service definitions to include operations related to ProfileProject if necessary
+
+service ProjectManagement {
+  // Existing Profile management RPCs...
+  rpc CreateProfile(Profile) returns (Profile);
+  rpc GetProfile(Profile) returns (Profile);
+  rpc UpdateProfile(Profile) returns (Profile);
+  rpc DeleteProfile(Profile) returns (Empty);
+
+  // Extend with Project and Task management RPCs as before...
+  rpc CreateProject(Project) returns (Project);
+  rpc GetProject(Project) returns (Project);
+  rpc UpdateProject(Project) returns (Project);
+  rpc DeleteProject(Project) returns (Empty);
+
+  rpc CreateTask(Task) returns (Task);
+  rpc GetTask(Task) returns (Task);
+  rpc UpdateTask(Task) returns (Task);
+  rpc DeleteTask(Task) returns (Empty);
+
+  // Optionally add RPCs for ProfileProject if needed for your application logic
+}

@@ -75,10 +75,14 @@
     "messanger": {
       "type": "application",
       "root": "apps/messanger",
-      "entryFile": "main",
-      "sourceRoot": "apps/messanger/src",
+      "entryFile": "src/main",
+      "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/messanger/tsconfig.app.json"
+        "tsConfigPath": "apps/messanger/tsconfig.app.json",
+        "assets": [
+          "proto/messanegr.proto"
+        ],
+        "watchAssets": true
       }
     }
   }

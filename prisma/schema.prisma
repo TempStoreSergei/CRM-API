@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["auth", "calendar"]
+  schemas  = ["auth", "calendar", "profile", "messenger"]
 }
 
 // User authentication and authorization
@@ -41,6 +41,8 @@ model User {
   Token      Token[]
   Event      Event[]
   RoleUser   RoleUser[]
+  Profile    Profile?
+  Chat       Chat[]
 
   @@map("users")
   @@schema("auth")
@@ -108,4 +110,82 @@ model Event {
   @@index([userId])
   @@map("events")
   @@schema("calendar")
+}
+
+// profile
+model Profile {
+  id            String           @id @default(uuid())
+  userId        String           @unique
+  projectId     String?          @map("project_id")
+  displayName   String?          @map("display_name")
+  avatar        String?          @map("avatar")
+  statusMessage String?          @map("status_message")
+  phoneNumber   String?          @map("phone_number")
+  lastSeen      DateTime?        @map("last_seen")
+  isOnline      Boolean          @default(false) @map("is_online")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  Projects      ProfileProject[]
+  User          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Project       Project?         @relation(fields: [projectId], references: [id])
+
+  @@map("profiles")
+  @@schema("profile")
+}
+
+model ProfileProject {
+  profileId String  @map("profile_id")
+  projectId String  @map("project_id")
+  Profile   Profile @relation(fields: [profileId], references: [id])
+  Project   Project @relation(fields: [projectId], references: [id])
+
+  @@id([profileId, projectId])
+  @@map("profile_projects")
+  @@schema("profile")
+}
+
+model Project {
+  id             String           @id @default(uuid())
+  name           String           @map("name")
+  description    String?          @map("description")
+  taskId         String?          @map("task_id")
+  Profiles       Profile[]
+  Task           Task?            @relation(fields: [taskId], references: [id])
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  ProfileProject ProfileProject[]
+
+  @@map("projects")
+  @@schema("profile")
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  name        String    @map("name")
+  description String?   @map("description")
+  completed   Boolean   @default(false) @map("completed")
+  Projects    Project[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("tasks")
+  @@schema("profile")
+}
+
+model Chat {
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @map("user_id")
+  text      String?
+  mediaUrl  String?   @map("media_url")
+  type      String    @default("text")
+  replyTo   String?   @map("reply_at")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([createdAt, userId]) // Adjust based on query patterns
+  @@map("chats")
+  @@schema("messenger")
 }
