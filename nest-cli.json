@@ -72,15 +72,15 @@
         "watchAssets": true
       }
     },
-    "messanger": {
+    "messenger": {
       "type": "application",
-      "root": "apps/messanger",
+      "root": "apps/messenger",
       "entryFile": "src/main",
       "sourceRoot": "./",
       "compilerOptions": {
-        "tsConfigPath": "apps/messanger/tsconfig.app.json",
+        "tsConfigPath": "apps/messenger/tsconfig.app.json",
         "assets": [
-          "proto/messanegr.proto"
+          "proto/messenger.proto"
         ],
         "watchAssets": true
       }
