@@ -26,9 +26,8 @@ export class ConversationService {
     call: ServerUnaryCall<any, any>,
     metadata: Metadata,
   ): Promise<any> {
-    const { title, type, memberIds, image } = call.request;
-    const authToken = metadata.get('authorization')[0] as string; // Assuming the token is passed in metadata
-    const userId = authToken;
+    const { title, type, memberIds, image } = call;
+    const userId = 'serega-to';
     const conversation = {
       id: uuidv4(),
       title,
@@ -39,6 +38,7 @@ export class ConversationService {
       updateTime: new Date().toISOString(),
     };
     await this.conversationsService.create(conversation);
+    console.log('Created conversation:', conversation);
     return { conversation };
   }
 
@@ -67,6 +67,6 @@ export class ConversationService {
   }
 
   async createSchema(): Promise<void> {
-    await this.conversationsService.createSchema('random');
+    await this.conversationsService.createSchema('conversations_new');
   }
 }

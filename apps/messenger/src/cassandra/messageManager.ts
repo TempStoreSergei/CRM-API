@@ -7,7 +7,7 @@ export class MessageManager {
 
   constructor() {
     this.client = new Client({
-      contactPoints: ['172.31.0.2', '172.31.0.5'], // Adjust based on your Cassandra setup
+      contactPoints: ['172.31.0.4', '172.31.0.2'], // Adjust based on your Cassandra setup
       localDataCenter: 'my-datacenter-1', // Adjust based on your Cassandra setup
     });
   }
@@ -47,19 +47,17 @@ export class MessageManager {
     offset: number,
   ): Promise<any[]> {
     try {
-      const query = `SELECT id, sender_id, text, audio, image, event, extra_params, created_at, delivery_at FROM messages_new.messages WHERE conversation_id = ?`;
-      const result = await this.client.execute(
-        query,
-        [types.Uuid.fromString(conversationID)],
-        { prepare: true },
-      );
+      const query = `SELECT id, sender_id, text, audio, image, event, extra_params, created_at, delivery_at FROM messages_new.messages WHERE conversation_id = ? LIMIT ?`;
+      const result = await this.client.execute(query, [conversationID, limit], {
+        prepare: true,
+      });
+
       return result.rows.map((row) => ({
         ...row,
         id: row.id.toString(),
         senderId: row.sender_id.toString(),
         createdAt: row.created_at,
         deliveryAt: row.delivery_at,
-        // Mapping of other fields might be needed based on your application's requirements
       }));
     } catch (error) {
       throw new Error(`Failed to get messages: ${error.message}`);

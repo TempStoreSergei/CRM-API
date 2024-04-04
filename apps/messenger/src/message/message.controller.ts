@@ -31,6 +31,7 @@ export class MessengerController
     | Promise<GetHistoryResponse>
     | Observable<GetHistoryResponse>
     | GetHistoryResponse {
+    console.log('Get history request:', request);
     return this.messageManager.getMessages(
       request.conversationId,
       request.limit,
@@ -67,6 +68,7 @@ export class MessengerController
             const members = await this.conversationManager.getByID(
               message.conversationId,
             );
+            console.log('Members:', members);
             members.forEach((memberId) => {
               if (memberId !== userId) {
                 downstream.next(message);

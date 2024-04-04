@@ -10,6 +10,7 @@ import {
   LeaveConversationRequest,
   MemberRequest,
 } from '@app/common/types/messenger';
+import { GrpcMethod } from '@nestjs/microservices'
 
 @Controller()
 export class ConversationController
@@ -21,14 +22,17 @@ export class ConversationController
     this.conversationService.createSchema();
   }
 
+  @GrpcMethod('ConversationService', 'addMember')
   addMember(request: MemberRequest) {
     return this.conversationService.addMember(request);
   }
 
+  @GrpcMethod('ConversationService', 'removeMember')
   removeMember(request: MemberRequest) {
     return this.conversationService.removeMember(request);
   }
 
+  @GrpcMethod('ConversationService', 'create')
   create(
     request: CreateConversationRequest,
   ):
@@ -38,6 +42,7 @@ export class ConversationController
     return this.conversationService.createConversation(request);
   }
 
+  @GrpcMethod('ConversationService', 'get')
   get(
     request: GetConversationsRequest,
   ):
@@ -47,6 +52,7 @@ export class ConversationController
     return this.conversationService.getConversations(request);
   }
 
+  @GrpcMethod('ConversationService', 'leave')
   leave(request: LeaveConversationRequest) {
     return 'Not implemented';
   }

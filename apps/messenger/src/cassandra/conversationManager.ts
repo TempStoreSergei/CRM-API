@@ -15,7 +15,7 @@ export class ConversationManager {
   async createSchema(schema: string): Promise<void> {
     try {
       await this.client.execute(
-        `CREATE KEYSPACE IF NOT EXISTS ${schema} WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }`,
+        `CREATE KEYSPACE IF NOT EXISTS ${schema} WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 2 }`,
       );
       await this.client.execute(
         `CREATE TABLE IF NOT EXISTS ${schema}.conversations (id uuid PRIMARY KEY, title text, type int, members set<uuid>, image blob, created_at timestamp)`,
@@ -35,7 +35,7 @@ export class ConversationManager {
   ): Promise<any[]> {
     try {
       const query =
-        'SELECT id, title, type, members, image, created_at FROM conversations WHERE members CONTAINS ?';
+        'SELECT id, title, type, members, image, created_at FROM conversations_new.conversations WHERE members CONTAINS ?';
       const result = await this.client.execute(query, [userID], {
         prepare: true,
       });
@@ -50,10 +50,10 @@ export class ConversationManager {
   async getByID(id: string): Promise<any> {
     try {
       const query =
-        'SELECT id, title, type, members, image, created_at FROM conversations WHERE id = ? LIMIT 1';
+        'SELECT id, title, type, members, image, created_at FROM conversations_new.conversations WHERE id = ? LIMIT 1';
       const result = await this.client.execute(
         query,
-        [types.Uuid.fromString(id)],
+        [id],
         { prepare: true },
       );
       return result.first();
@@ -66,7 +66,7 @@ export class ConversationManager {
     try {
       const id = types.Uuid.random(); // Generate a new UUID for the conversation
       const query =
-        'INSERT INTO conversations (id, title, type, members, image, created_at) VALUES (?, ?, ?, ?, ?, ?)';
+        'INSERT INTO conversations_new.conversations (id, title, type, members, image, created_at) VALUES (?, ?, ?, ?, ?, ?)';
       await this.client.execute(
         query,
         [
@@ -87,7 +87,7 @@ export class ConversationManager {
   async removeMember(cID: string, memberID: string): Promise<void> {
     try {
       await this.client.execute(
-        'UPDATE conversations SET members = members - { ? } WHERE id = ?',
+        'UPDATE conversations_new.conversations SET members = members - { ? } WHERE id = ?',
         [memberID, cID],
         { prepare: true },
       );
@@ -99,7 +99,7 @@ export class ConversationManager {
   async addMember(cID: string, memberID: string): Promise<void> {
     try {
       await this.client.execute(
-        'UPDATE conversations SET members = members + { ? } WHERE id = ?',
+        'UPDATE conversations_new.conversations SET members = members + { ? } WHERE id = ?',
         [memberID, cID],
         { prepare: true },
       );
@@ -111,7 +111,7 @@ export class ConversationManager {
   async update(conversation: any): Promise<void> {
     try {
       await this.client.execute(
-        'UPDATE conversations SET title = ?, image = ? WHERE id = ?',
+        'UPDATE conversations_new.conversations SET title = ?, image = ? WHERE id = ?',
         [conversation.title, conversation.image, conversation.id],
         { prepare: true },
       );
