@@ -60,7 +60,11 @@ func (rl *rateLimiter) allow(ip string) bool {
 	v.lastSeen = time.Now()
 
 	tokensToAdd := int(elapsed.Seconds()) * rl.rate
-	v.tokens = min(v.tokens+tokensToAdd, rl.burst)
+	newTokens := v.tokens + tokensToAdd
+	if newTokens > rl.burst {
+		newTokens = rl.burst
+	}
+	v.tokens = newTokens
 
 	if v.tokens > 0 {
 		v.tokens--

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,12 +16,33 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins in development
-	},
+func getWebSocketUpgrader() websocket.Upgrader {
+	return websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			
+			// Get allowed origins from environment
+			allowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
+			if allowedOrigins == "" {
+				// In development, allow localhost origins
+				env := os.Getenv("ENVIRONMENT")
+				if env == "development" || env == "" {
+					return strings.HasPrefix(origin, "http://localhost") || origin == ""
+				}
+				return false
+			}
+			
+			// Check against allowed origins
+			for _, allowed := range strings.Split(allowedOrigins, ",") {
+				if strings.TrimSpace(allowed) == origin {
+					return true
+				}
+			}
+			return false
+		},
+	}
 }
 
 type WebSocketHandler struct {
@@ -79,6 +102,7 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 	}
 
 	// Upgrade connection
+	upgrader := getWebSocketUpgrader()
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)

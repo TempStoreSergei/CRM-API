@@ -41,7 +41,7 @@ func (h *VacationHandler) GetVacations(c *gin.Context) {
 
 	// Build query
 	query := `
-		SELECT v.id, v.user_id, u.first_name, u.last_name, u.email, u.avatar_url, u.position,
+		SELECT v.id, v.user_id, CONCAT(u.first_name, ' ', u.last_name) as user_name, u.email, u.avatar_url, u.position,
 			v.type, v.start_date, v.end_date, v.total_days, v.status, v.reason,
 			v.approved_by, CONCAT(a.first_name, ' ', a.last_name) as approver_name,
 			v.created_at
@@ -102,18 +102,13 @@ func (h *VacationHandler) GetVacations(c *gin.Context) {
 		var approvedBy, approverName sql.NullString
 		var startDate, endDate time.Time
 
-		err := rows.Scan(&v.ID, &v.User.ID, &v.User.Name, &v.User.Email, &v.User.Email, &avatar, &position,
+		err := rows.Scan(&v.ID, &v.User.ID, &v.User.Name, &v.User.Email, &avatar, &position,
 			&v.Type, &startDate, &endDate, &v.TotalDays, &v.Status, &reason,
 			&approvedBy, &approverName, &v.CreatedAt)
 
 		if err != nil {
 			continue
 		}
-
-		// Fix user name (concat first and last name)
-		var firstName, lastName string
-		database.DB.QueryRow("SELECT first_name, last_name FROM users WHERE id = $1", v.User.ID).Scan(&firstName, &lastName)
-		v.User.Name = firstName + " " + lastName
 
 		if avatar.Valid {
 			v.User.Avatar = avatar.String
